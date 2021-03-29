@@ -1,27 +1,35 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const app = express();
+const server = require('http').Server(app);
 
+const config = require('dotenv').config()
+
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const socket = require('./socket');
 // connection to db
-const db = require('./db')
-    // ideally this url should be in an .env file
-    // const uri = "mongodb+srv://db_userplatzimess:gokuvsleon@cluster0.tyt82.mongodb.net/platziapp_db?retryWrites=true&w=majority";
-const uri = "mongodb+srv://db_userplatzimess:gokuvsleon@cluster0.tyt82.mongodb.net/platziapp_db"
-db(uri);
+const db = require('./db');
+
+db(config.dbUrl);
 
 // routes file
 const router = require('./network/routes');
 
+app.use(cors());
+
 // start the express server
-var app = express();
 app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(bodyParser.json());
 
+socket.connect(server);
+
 // run the routes with the server
 router(app);
 
-app.use('/app', express.static('public'));
+app.use(config.publicRoute, express.static('public'));
 
-app.listen(3000);
-console.log('listen at http://localhost:3000');
+app.listen(config.port, function() {
+    console.log('listen at ' + config.host + ':' + config.port);
+});
