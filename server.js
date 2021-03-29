@@ -1,40 +1,27 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const response = require('./network/response')
+// connection to db
+const db = require('./db')
+    // ideally this url should be in an .env file
+    // const uri = "mongodb+srv://db_userplatzimess:gokuvsleon@cluster0.tyt82.mongodb.net/platziapp_db?retryWrites=true&w=majority";
+const uri = "mongodb+srv://db_userplatzimess:gokuvsleon@cluster0.tyt82.mongodb.net/platziapp_db"
+db(uri);
 
-const router = express.Router();
+// routes file
+const router = require('./network/routes');
 
-const app = express();
+// start the express server
+var app = express();
 app.use(bodyParser.urlencoded({
     extended: false
 }));
 app.use(bodyParser.json());
-app.use(router);
 
-router.get('/', function(req, res) {
-    console.log(req.headers);
-    if (req.body.error == "ok") {
-        response.error(req, res, 'simulated error', 400)
-    } else {
-        response.success(req, res, 'message list');
-    }
-    res.header({
-        "custom-header": "Nuestro valor personalizado",
-    });
-});
-
-router.post('/message', function(req, res) {
-    console.log(req.body);
-    console.log(req.query);
-    if (req.query.error == "ok") {
-        response.error(req, res, 'unexpected error', 500, 'it\'s just a simulation of the errors')
-    } else {
-        response.success(req, res, 'correctly created', 201);
-    }
-});
+// run the routes with the server
+router(app);
 
 app.use('/app', express.static('public'));
 
 app.listen(3000);
-console.log('La aplicacion esta escuchando en http://localhost:3000');
+console.log('listen at http://localhost:3000');
